@@ -111,8 +111,9 @@ class TransformerConverter:
         self.bos = '<BOS>'
         self.eos = '<EOS>'
         self.mask_token = '<MASK>'
+        self.unk_token = '<UNK>'
         list_character = list(character)
-        self.character = [self.pad, self.bos, self.eos, self.mask_token] + list_character
+        self.character = [self.pad, self.bos, self.eos, self.mask_token, self.unk_token] + list_character
         self.dict = {
             c: i
             for i, c in enumerate(self.character)
@@ -121,6 +122,7 @@ class TransformerConverter:
         self.bos_idx = self.dict[self.bos]
         self.eos_idx = self.dict[self.eos]
         self.mask_token_idx = self.dict[self.mask_token]
+        self.unk_idx = self.dict[self.unk_token]
         self.max_seq_length = 256
 
     @property
@@ -132,7 +134,7 @@ class TransformerConverter:
         max_length = max(length)
         batch_text = torch.zeros(len(text), max_length, dtype=torch.long) + self.pad_idx
         for i, s in enumerate(text):
-            token_ids = [self.bos_idx, *[self.dict.get(c, self.pad_idx) for c in s], self.eos_idx]
+            token_ids = [self.bos_idx, *[self.dict.get(c, self.unk_idx) for c in s], self.eos_idx]
             batch_text[i, :length[i]] = torch.LongTensor(token_ids)
         batch_text = batch_text.to(device)
 
