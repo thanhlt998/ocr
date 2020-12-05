@@ -1,0 +1,10 @@
+fire
+opencv_python>=4.2.0.34
+config
+lmdb
+six==1.15.0
+torch
+torchvision
+numpy
+natsort
+Pillow
