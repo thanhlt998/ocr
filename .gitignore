@@ -4,3 +4,4 @@ lmdb_data
 __pycache__
 saved_models
 figures
+pretrained_model

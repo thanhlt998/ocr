@@ -127,7 +127,7 @@ class TransformerConverter:
     def n_classes(self):
         return len(self.character)
 
-    def encode(self, text,):
+    def encode(self, text, batch_max_length=None):
         length = [len(s) + 2 for s in text]
         max_length = max(length)
         batch_text = torch.zeros(len(text), max_length, dtype=torch.long) + self.pad_idx

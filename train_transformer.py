@@ -17,6 +17,8 @@ from dataset import hierarchical_dataset, AlignCollate, Batch_Balanced_Dataset
 from model import Model
 from label_smoothing_loss import LabelSmoothingLoss
 from test import validation
+from collections import OrderedDict
+import re
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
 
@@ -81,10 +83,19 @@ def train(opt):
     model.train()
     if opt.saved_model != '':
         print(f'loading pretrained model from {opt.saved_model}')
-        if opt.FT:
-            model.load_state_dict(torch.load(opt.saved_model), strict=False)
+        if opt.SequenceModeling == 'Transformer':
+            fe_state = OrderedDict()
+            state_dict = torch.load(opt.saved_model)
+            for k, v in state_dict.items():
+                if k.startswith('module.FeatureExtraction'):
+                    new_k = re.sub('module.FeatureExtraction.', '', k)
+                    fe_state[new_k] = state_dict[k]
+            model.FeatureExtraction.load_state_dict(fe_state)
         else:
-            model.load_state_dict(torch.load(opt.saved_model))
+            if opt.FT:
+                model.load_state_dict(torch.load(opt.saved_model), strict=False)
+            else:
+                model.load_state_dict(torch.load(opt.saved_model))
     print("Model:")
     print(model)
 
