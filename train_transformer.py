@@ -279,7 +279,7 @@ if __name__ == '__main__':
     parser.add_argument('--rgb', default=True, action='store_true', help='use rgb input')
     parser.add_argument('--character', type=str,
                         # default=" :#@()'!/*,.qwertyuiopasdfghjklzxcvbnm1234567890QWERTYUIOPASDFGHJKLZXCVBNM",
-                        default="0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ()-*!:#",
+                        default=" 0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ()-*!:#.,'/",
                         help='character label')
     parser.add_argument('--sensitive', action='store_true', help='for sensitive character mode')
     parser.add_argument('--PAD', action='store_true', help='whether to keep ratio then pad for image resize')
