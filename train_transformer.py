@@ -179,7 +179,7 @@ def train(opt):
             tgt_input = text['tgt_input']
             tgt_output = text['tgt_output']
             tgt_padding_mask = text['tgt_padding_mask']
-            preds = model(image, tgt_input, tgt_key_padding_mask=tgt_padding_mask,)
+            preds = model(image, tgt_input.transpose(0, 1), tgt_key_padding_mask=tgt_padding_mask,)
             cost = criterion(preds.view(-1, preds.shape[-1]), tgt_output.contiguous().view(-1))
         else:
             preds = model(image, text[:, :-1])  # align with Attention.forward

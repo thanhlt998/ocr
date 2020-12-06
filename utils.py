@@ -145,8 +145,8 @@ class TransformerConverter:
             batch_text[mask] = self.mask_token_idx
 
         tgt_padding_mask = batch_text == self.pad_idx
-        batch_text = batch_text.transpose(0, 1)
-        tgt_output = batch_text.roll(-1, dims=0).transpose(0, 1)
+        # batch_text = batch_text.transpose(0, 1)
+        tgt_output = batch_text.roll(-1, dims=1)
         tgt_output[:, -1] = self.pad_idx
         # return batch_text, tgt_mask, torch.LongTensor(length, device=device)
         return (

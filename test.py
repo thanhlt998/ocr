@@ -134,7 +134,7 @@ def validation(model, criterion, evaluation_loader, converter, opt):
             tgt_input = text_for_loss['tgt_input']
             tgt_output = text_for_loss['tgt_output']
             tgt_padding_mask = text_for_loss['tgt_padding_mask']
-            preds = model(image, tgt_input, tgt_key_padding_mask=tgt_padding_mask,)
+            preds = model(image, tgt_input.transpose(0, 1), tgt_key_padding_mask=tgt_padding_mask,)
             forward_time = time.time() - start_time
             cost = criterion(preds.view(-1, preds.shape[-1]), tgt_output.contiguous().view(-1))
 
