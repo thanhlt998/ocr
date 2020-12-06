@@ -19,6 +19,7 @@ from label_smoothing_loss import LabelSmoothingLoss
 from test import validation
 from collections import OrderedDict
 import re
+from tqdm import tqdm
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
 
@@ -149,9 +150,12 @@ def train(opt):
     start_time = time.time()
     best_accuracy = -1
     best_norm_ED = -1
-    i = start_iter
+    # i = start_iter
 
-    while(True):
+    bar = tqdm(range(start_iter, opt.num_iter))
+    # while(True):
+    for i in bar:
+        bar.set_description(f'Iter {i}: train_loss = {loss_avg.val():.5f}')
         # train part
         image_tensors, labels = train_dataset.get_batch()
         image = image_tensors.to(device)
@@ -242,10 +246,11 @@ def train(opt):
             torch.save(
                 model.state_dict(), f'./saved_models/{opt.experiment_name}/iter_{i+1}.pth')
 
-        if i == opt.num_iter:
-            print('end the training')
-            sys.exit()
-        i += 1
+        # if i == opt.num_iter:
+        #     print('end the training')
+        #     sys.exit()
+        # i += 1
+    print('end training')
 
 
 if __name__ == '__main__':
