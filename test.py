@@ -160,7 +160,7 @@ def validation(model, criterion, evaluation_loader, converter, opt):
 
         # calculate accuracy & confidence score
         if opt.Prediction == 'None':
-            preds_max_prob = preds_prob.max(dim=2) if preds_prob is not None else np.zeros(len(labels))
+            preds_max_prob = preds_prob if preds_prob is not None else np.zeros(len(labels))
         else:
             preds_prob = F.softmax(preds, dim=2)
             preds_max_prob, _ = preds_prob.max(dim=2)

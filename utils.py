@@ -1,4 +1,5 @@
 import torch
+import numpy as np
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
 
@@ -101,7 +102,7 @@ class TransformerConverter:
     def __init__(
             self,
             character,
-            mask_language_model=True,
+            mask_language_model=False,
             p_mask_token=0.05,
             max_seq_length=256,
     ):
@@ -144,10 +145,10 @@ class TransformerConverter:
             mask = mask & (batch_text != self.pad_idx) & (batch_text != self.bos_idx) & (batch_text != self.eos_idx)
             batch_text[mask] = self.mask_token_idx
 
-        tgt_padding_mask = batch_text == self.pad_idx
         # batch_text = batch_text.transpose(0, 1)
         tgt_output = batch_text.roll(-1, dims=1)
         tgt_output[:, -1] = self.pad_idx
+        tgt_padding_mask = tgt_output == self.pad_idx
         # return batch_text, tgt_mask, torch.LongTensor(length, device=device)
         return (
             {
@@ -167,6 +168,8 @@ class TransformerConverter:
     def decode(self, batch_ids):
         if torch.is_tensor(batch_ids):
             batch_ids = batch_ids.cpu().tolist()
+        elif type(batch_ids) == np.ndarray:
+            batch_ids = batch_ids.tolist()
         return [self._decode_one(token_ids) for token_ids in batch_ids]
 
 
