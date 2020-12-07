@@ -80,9 +80,9 @@ def benchmark_all_eval(model, criterion, converter, opt, calculate_infer_time=Fa
     return None
 
 
-def predict(model, input, converter, beam_search=True):
+def predict(model, input, converter, beam_search=True, max_seq_length=64,):
     if beam_search:
-        translated_sentence = batch_translate_beam_search(input, model)
+        translated_sentence = batch_translate_beam_search(input, model, max_seq_length=max_seq_length)
         prob = None
     else:
         translated_sentence, prob = translate(input, model)
