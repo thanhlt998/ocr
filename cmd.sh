@@ -16,4 +16,6 @@ python train_transformer.py \
 --Transformation None \
 --FeatureExtraction ResNet \
 --SequenceModeling Transformer \
---Prediction None
+--Prediction None \
+--adam \
+--lr 0.01

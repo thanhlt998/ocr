@@ -105,6 +105,7 @@ def train(opt):
         criterion = torch.nn.CTCLoss(zero_infinity=True).to(device)
     elif opt.Prediction == 'None':
         criterion = LabelSmoothingLoss(classes=converter.n_classes, padding_idx=converter.pad_idx)
+        # criterion = torch.nn.CrossEntropyLoss(ignore_index=converter.pad_idx)
     else:
         criterion = torch.nn.CrossEntropyLoss(ignore_index=0).to(device)  # ignore [GO] token = ignore index 0
     # loss averager
@@ -198,7 +199,7 @@ def train(opt):
         loss_avg.add(cost)
 
         # validation part
-        if i % opt.valInterval == 0:
+        if i > 0 and i % opt.valInterval == 0:
             elapsed_time = time.time() - start_time
             # for log
             with open(f'./saved_models/{opt.experiment_name}/log_train.txt', 'a') as log:
