@@ -98,6 +98,8 @@ def train(opt):
                 model.load_state_dict(torch.load(opt.saved_model), strict=False)
             else:
                 model.load_state_dict(torch.load(opt.saved_model))
+    if opt.freeze_fe:
+        model.freeze(['FeatureExtraction'])
     print("Model:")
     print(model)
 
@@ -315,6 +317,7 @@ if __name__ == '__main__':
     parser.add_argument('--max_seq_length', type=int, default=256, help='max_seq_length of transformer sequence modeling')
     parser.add_argument('--pos_dropout', type=float, default=0.1, help='pos_dropout of transformer sequence modeling')
     parser.add_argument('--trans_dropout', type=float, default=0.1, help='trans_dropout of transformer sequence modeling')
+    parser.add_argument('--freeze_fe', action='store_true', help='freeze feature extraction module')
 
 
     opt = parser.parse_args()

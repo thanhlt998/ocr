@@ -133,3 +133,11 @@ class Model(nn.Module):
         visual_feature = visual_feature.squeeze(3)
         return visual_feature
 
+    def freeze(self, module_names):
+        for module_name in module_names:
+            if module_name == 'FeatureExtraction':
+                self.FeatureExtraction.requires_grad_(False)
+            elif module_name == 'SequenceModeling':
+                self.SequenceModeling.requires_grad_(False)
+
+
