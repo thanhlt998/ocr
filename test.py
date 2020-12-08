@@ -138,9 +138,8 @@ def validation(model, criterion, evaluation_loader, converter, opt):
             forward_time = time.time() - start_time
             cost = criterion(preds.view(-1, preds.shape[-1]), tgt_output.contiguous().view(-1))
 
-            preds_str, preds_prob = predict(model, image, converter, beam_search=True)
+            preds_str, preds_prob = predict(model, image, converter, beam_search=False, max_seq_length=32)
             labels = converter.decode(tgt_input)
-
 
         else:
             preds = model(image, text_for_pred, is_train=False)

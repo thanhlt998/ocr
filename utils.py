@@ -102,7 +102,7 @@ class TransformerConverter:
     def __init__(
             self,
             character,
-            mask_language_model=False,
+            mask_language_model=True,
             p_mask_token=0.05,
             max_seq_length=256,
     ):

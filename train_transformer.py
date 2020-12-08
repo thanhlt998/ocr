@@ -20,6 +20,7 @@ from test import validation
 from collections import OrderedDict
 import re
 from tqdm import tqdm
+from custom_optimizer import NoamOpt
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
 
@@ -104,7 +105,7 @@ def train(opt):
     if 'CTC' in opt.Prediction:
         criterion = torch.nn.CTCLoss(zero_infinity=True).to(device)
     elif opt.Prediction == 'None':
-        criterion = LabelSmoothingLoss(classes=converter.n_classes, padding_idx=converter.pad_idx)
+        criterion = LabelSmoothingLoss(classes=converter.n_classes, padding_idx=converter.pad_idx, smoothing=0.1)
         # criterion = torch.nn.CrossEntropyLoss(ignore_index=converter.pad_idx)
     else:
         criterion = torch.nn.CrossEntropyLoss(ignore_index=0).to(device)  # ignore [GO] token = ignore index 0
@@ -123,6 +124,7 @@ def train(opt):
     # setup optimizer
     if opt.adam:
         optimizer = optim.Adam(filtered_parameters, lr=opt.lr, betas=(opt.beta1, 0.999))
+        optimizer = NoamOpt(model_size=opt.d_model, factor=1, warmup=2000, optimizer=optimizer)
     else:
         optimizer = optim.Adadelta(filtered_parameters, lr=opt.lr, rho=opt.rho, eps=opt.eps)
     print("Optimizer:")

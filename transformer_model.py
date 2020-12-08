@@ -5,6 +5,7 @@ from torch import nn
 
 class LanguageTransformer(nn.Module):
     def __init__(self, vocab_size,
+                 input_size,
                  d_model, nhead,
                  num_encoder_layers, num_decoder_layers,
                  dim_feedforward, max_seq_length,
@@ -21,6 +22,9 @@ class LanguageTransformer(nn.Module):
                                           dim_feedforward, trans_dropout)
 
         self.fc = nn.Linear(d_model, vocab_size)
+        self.i2d = nn.Linear(input_size, d_model)
+
+        self._init_params()
 
     def forward(self, src, tgt, src_key_padding_mask=None, tgt_key_padding_mask=None, memory_key_padding_mask=None):
         """
@@ -33,6 +37,7 @@ class LanguageTransformer(nn.Module):
             - output: (N, T, E)
 
         """
+        src = self.i2d(src)
         tgt_mask = self.gen_nopeek_mask(tgt.shape[0]).to(src.device)
 
         src = self.pos_enc(src * math.sqrt(self.d_model))
@@ -53,9 +58,10 @@ class LanguageTransformer(nn.Module):
 
         return mask
 
-    def forward_encoder(self, src):
+    def forward_encoder(self, src, mask=None):
+        src = self.i2d(src)
         src = self.pos_enc(src * math.sqrt(self.d_model))
-        memory = self.transformer.encoder(src)
+        memory = self.transformer.encoder(src, mask=mask,)
         return memory
 
     def forward_decoder(self, tgt, memory):
@@ -75,6 +81,11 @@ class LanguageTransformer(nn.Module):
     def get_memory(self, memory, i):
         memory = memory[:, [i], :]
         return memory
+
+    def _init_params(self):
+        for p in self.parameters():
+            if p.dim() > 1:
+                nn.init.xavier_uniform_(p)
 
 
 class PositionalEncoding(nn.Module):

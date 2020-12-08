@@ -61,8 +61,8 @@ class Model(nn.Module):
         elif opt.SequenceModeling == 'Transformer':
             self.SequenceModeling = LanguageTransformer(
                 vocab_size=opt.num_class,
-                # d_model=opt.d_model,
-                d_model=self.FeatureExtraction_output,
+                input_size=self.FeatureExtraction_output,
+                d_model=opt.d_model,
                 nhead=opt.nhead,
                 num_encoder_layers=opt.num_encoder_layers,
                 num_decoder_layers=opt.num_decoder_layers,
