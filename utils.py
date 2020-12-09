@@ -124,13 +124,14 @@ class TransformerConverter:
         self.eos_idx = self.dict[self.eos]
         self.mask_token_idx = self.dict[self.mask_token]
         self.unk_idx = self.dict[self.unk_token]
+        self.start_real_char_idx = self.unk_idx + 1
         self.max_seq_length = 256
 
     @property
     def n_classes(self):
         return len(self.character)
 
-    def encode(self, text, batch_max_length=None):
+    def encode(self, text, batch_max_length=None, train=True):
         length = [len(s) + 2 for s in text]
         max_length = max(length)
         batch_text = torch.zeros(len(text), max_length, dtype=torch.long) + self.pad_idx
@@ -139,7 +140,7 @@ class TransformerConverter:
             batch_text[i, :length[i]] = torch.LongTensor(token_ids)
         batch_text = batch_text.to(device)
 
-        if self.mask_language_model:
+        if self.mask_language_model and train:
             # mask = batch_text.new(*batch_text.size()).bernoulli_(1-self.p_mask_token).div_(1-self.p_mask_token)
             mask = torch.rand(batch_text.size(), device=batch_text.device) < self.p_mask_token
             mask = mask & (batch_text != self.pad_idx) & (batch_text != self.bos_idx) & (batch_text != self.eos_idx)

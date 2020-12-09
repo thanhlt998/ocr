@@ -106,7 +106,7 @@ def validation(model, criterion, evaluation_loader, converter, opt):
         length_for_pred = torch.IntTensor([opt.batch_max_length] * batch_size).to(device)
         text_for_pred = torch.LongTensor(batch_size, opt.batch_max_length + 1).fill_(0).to(device)
 
-        text_for_loss, length_for_loss = converter.encode(labels, batch_max_length=opt.batch_max_length)
+        text_for_loss, length_for_loss = converter.encode(labels, batch_max_length=opt.batch_max_length, train=False)
 
         start_time = time.time()
         preds_prob = None
@@ -138,7 +138,7 @@ def validation(model, criterion, evaluation_loader, converter, opt):
             forward_time = time.time() - start_time
             cost = criterion(preds.view(-1, preds.shape[-1]), tgt_output.contiguous().view(-1))
 
-            preds_str, preds_prob = predict(model, image, converter, beam_search=False, max_seq_length=32)
+            preds_str, preds_prob = predict(model, image, converter, beam_search=opt.beam_search, max_seq_length=32)
             labels = converter.decode(tgt_input)
 
         else:

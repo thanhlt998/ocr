@@ -319,6 +319,7 @@ if __name__ == '__main__':
     parser.add_argument('--pos_dropout', type=float, default=0.1, help='pos_dropout of transformer sequence modeling')
     parser.add_argument('--trans_dropout', type=float, default=0.1, help='trans_dropout of transformer sequence modeling')
     parser.add_argument('--freeze_fe', action='store_true', help='freeze feature extraction module')
+    parser.add_argument('--beam_search', action='store_true', help='use beam search')
 
 
     opt = parser.parse_args()
