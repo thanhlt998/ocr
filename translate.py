@@ -12,7 +12,7 @@ def batch_translate_beam_search(img, model, beam_size=4, candidates=1, max_seq_l
     sents = []
 
     with torch.no_grad():
-        src = model.forward_visual_feature(img)
+        src = model.forward_visual_feature(img).transpose(0, 1)
         memories = model.SequenceModeling.forward_encoder(src).transpose(0, 1)
         for i in range(src.size(0)):
             #            memory = memories[:,i,:].repeat(1, beam_size, 1) # TxNxE
@@ -31,7 +31,7 @@ def translate_beam_search(img, model, beam_size=4, candidates=1, max_seq_length=
     device = img.device
 
     with torch.no_grad():
-        src = model.forward_visual_feature(img)
+        src = model.forward_visual_feature(img).transpose(0, 1)
         memory = model.SequenceModeling.forward_encoder(src)  # TxNxE
         sent = beamsearch(memory, model, device, beam_size, candidates, max_seq_length, bos_token, eos_token)
 
@@ -76,7 +76,7 @@ def translate(img, model, max_seq_length=128, bos_token=1, eos_token=2):
     device = img.device
 
     with torch.no_grad():
-        src = model.forward_visual_feature(img)
+        src = model.forward_visual_feature(img).transpose(0, 1)
         memory = model.SequenceModeling.forward_encoder(src)
 
         translated_sentence = [[bos_token] * len(img)]
