@@ -145,15 +145,13 @@ class TransformerConverter:
             mask = mask & (batch_text != self.pad_idx) & (batch_text != self.bos_idx) & (batch_text != self.eos_idx)
             batch_text[mask] = self.mask_token_idx
 
-        # batch_text = batch_text.transpose(0, 1)
-        tgt_padding_mask = batch_text == self.pad_idx
-        tgt_padding_mask[:, -1] = True
-        tgt_output = batch_text.roll(-1, dims=1)
-        tgt_output[:, -1] = self.pad_idx
+        tgt_input = batch_text[:, :-1]
+        tgt_output = batch_text[:, 1:]
+        tgt_padding_mask = tgt_input == self.pad_idx
         # return batch_text, tgt_mask, torch.LongTensor(length, device=device)
         return (
             {
-                'tgt_input': batch_text,
+                'tgt_input': tgt_input,
                 'tgt_padding_mask': tgt_padding_mask,
                 'tgt_output': tgt_output,
             },

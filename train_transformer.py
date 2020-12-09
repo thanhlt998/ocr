@@ -125,8 +125,9 @@ def train(opt):
 
     # setup optimizer
     if opt.adam:
-        optimizer = optim.Adam(filtered_parameters, lr=opt.lr, betas=(opt.beta1, 0.999))
-        optimizer = NoamOpt(model_size=opt.d_model, factor=1, warmup=2000, optimizer=optimizer)
+        # optimizer = optim.Adam(filtered_parameters, lr=opt.lr, betas=(opt.beta1, 0.999))
+        optimizer = optim.AdamW(filtered_parameters, lr=opt.lr, betas=(opt.beta1, 0.999))
+        # optimizer = NoamOpt(model_size=opt.d_model, factor=1, warmup=2000, optimizer=optimizer)
     else:
         optimizer = optim.Adadelta(filtered_parameters, lr=opt.lr, rho=opt.rho, eps=opt.eps)
     print("Optimizer:")
@@ -266,7 +267,7 @@ if __name__ == '__main__':
     parser.add_argument('--valid_data', required=True, help='path to validation dataset')
     parser.add_argument('--manualSeed', type=int, default=1111, help='for random seed setting')
     parser.add_argument('--workers', type=int, help='number of data loading workers', default=4)
-    parser.add_argument('--batch_size', type=int, default= 64, help='input batch size')
+    parser.add_argument('--batch_size', type=int, default=64, help='input batch size')
     parser.add_argument('--num_iter', type=int, default=300000, help='number of iterations to train for')
     parser.add_argument('--valInterval', type=int, default=2000, help='Interval between each validation')
     parser.add_argument('--saved_model', default='', help="path to model to continue training")

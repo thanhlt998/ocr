@@ -40,8 +40,8 @@ class LanguageTransformer(nn.Module):
         src = self.i2d(src)
         tgt_mask = self.gen_nopeek_mask(tgt.shape[0]).to(src.device)
 
-        src = self.pos_enc(src * math.sqrt(self.d_model))
-        #        src = self.learned_pos_enc(src*math.sqrt(self.d_model))
+        # src = self.pos_enc(src * math.sqrt(self.d_model))
+        src = self.pos_enc(src)
 
         tgt = self.pos_enc(self.embed_tgt(tgt) * math.sqrt(self.d_model))
 
@@ -60,7 +60,8 @@ class LanguageTransformer(nn.Module):
 
     def forward_encoder(self, src, mask=None):
         src = self.i2d(src)
-        src = self.pos_enc(src * math.sqrt(self.d_model))
+        # src = self.pos_enc(src * math.sqrt(self.d_model))
+        src = self.pos_enc(src)
         memory = self.transformer.encoder(src, mask=mask,)
         return memory
 

@@ -85,7 +85,7 @@ def predict(model, input, converter, beam_search=True, max_seq_length=64,):
         translated_sentence = batch_translate_beam_search(input, model, max_seq_length=max_seq_length)
         prob = None
     else:
-        translated_sentence, prob = translate(input, model)
+        translated_sentence, prob = translate(input, model, max_seq_length=max_seq_length)
 
     return converter.decode(translated_sentence), prob
 
