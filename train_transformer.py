@@ -20,6 +20,7 @@ from test import validation
 from collections import OrderedDict
 import re
 from tqdm import tqdm
+import json
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
 
@@ -158,6 +159,12 @@ def train(opt):
         except:
             pass
 
+    if opt.load_from_checkpoint:
+        with open(os.path.join(opt.load_from_checkpoint, 'iter.json'), mode='r', encoding='utf8') as f:
+            start_iter = json.load(f)
+            print(f'continue to train, start_iter: {start_iter}')
+            f.close()
+
     start_time = time.time()
     best_accuracy = -1
     best_norm_ED = -1
@@ -236,6 +243,9 @@ def train(opt):
                 # checkpoint
                 torch.save(model.state_dict(), f'./checkpoints/{opt.experiment_name}/checkpoint.pth')
                 torch.save(optimizer.state_dict(), f'./checkpoints/{opt.experiment_name}/optimizer.pth')
+                with open(f'./checkpoints/{opt.experiment_name}/iter.json', mode='w', encoding='utf8') as f:
+                    json.dump(i + 1, f)
+                    f.close()
 
                 with open(f'./checkpoints/{opt.experiment_name}/checkpoint.log', mode='a', encoding='utf8') as f:
                     f.write(f'Saved checkpoint with iter={i}\n')
