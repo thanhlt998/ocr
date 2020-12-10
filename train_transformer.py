@@ -241,6 +241,8 @@ def train(opt):
                     torch.save(model.state_dict(), f'./saved_models/{opt.experiment_name}/best_norm_ED.pth')
 
                 # checkpoint
+                os.makedirs(f'./checkpoints/{opt.experiment_name}/', exist_ok=True)
+
                 torch.save(model.state_dict(), f'./checkpoints/{opt.experiment_name}/checkpoint.pth')
                 torch.save(optimizer.state_dict(), f'./checkpoints/{opt.experiment_name}/optimizer.pth')
                 with open(f'./checkpoints/{opt.experiment_name}/iter.json', mode='w', encoding='utf8') as f:
