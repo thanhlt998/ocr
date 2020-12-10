@@ -20,7 +20,6 @@ from test import validation
 from collections import OrderedDict
 import re
 from tqdm import tqdm
-from custom_optimizer import NoamOpt
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
 
@@ -84,8 +83,8 @@ def train(opt):
     model = model.to(device)
     model.train()
     if opt.load_from_checkpoint != '':
-        print(f'loading checkpoint from {opt.load_from_checkpoint}')
-        model.load_state_dict(torch.load(opt.load_from_checkpoint))
+        model.load_state_dict(torch.load(os.path.join(opt.load_from_checkpoint, 'checkpoint.pth')))
+        print(f'loaded checkpoint from {opt.load_from_checkpoint}...')
     elif opt.saved_model != '':
         print(f'loading pretrained model from {opt.saved_model}')
         if opt.SequenceModeling == 'Transformer':
@@ -135,6 +134,9 @@ def train(opt):
         optimizer = optim.Adadelta(filtered_parameters, lr=opt.lr, rho=opt.rho, eps=opt.eps)
     print("Optimizer:")
     print(optimizer)
+
+    if opt.load_from_checkpoint != '':
+        optimizer.load_state_dict(torch.load(os.path.join(opt.load_from_checkpoint, 'optimizer.pth')))
 
     """ final options """
     # print(opt)
@@ -207,7 +209,7 @@ def train(opt):
         loss_avg.add(cost)
 
         # validation part
-        if i > 0 and i % opt.valInterval == 0:
+        if (i + 1) % opt.valInterval == 0:
             elapsed_time = time.time() - start_time
             # for log
             with open(f'./saved_models/{opt.experiment_name}/log_train.txt', 'a') as log:
@@ -230,6 +232,16 @@ def train(opt):
                 if current_norm_ED > best_norm_ED:
                     best_norm_ED = current_norm_ED
                     torch.save(model.state_dict(), f'./saved_models/{opt.experiment_name}/best_norm_ED.pth')
+
+                # checkpoint
+                torch.save(model.state_dict(), f'./checkpoints/{opt.experiment_name}/checkpoint.pth')
+                torch.save(optimizer.state_dict(), f'./checkpoints/{opt.experiment_name}/optimizer.pth')
+
+                with open(f'./checkpoints/{opt.experiment_name}/checkpoint.log', mode='a', encoding='utf8') as f:
+                    f.write(f'Saved checkpoint with iter={i}\n')
+                    f.write(f'\tCheckpoint at: ./checkpoints/{opt.experiment_name}/checkpoint.pth')
+                    f.write(f'\tOptimizer at: ./checkpoints/{opt.experiment_name}/optimizer.pth')
+
                 best_model_log = f'{"Best_accuracy":17s}: {best_accuracy:0.3f}, {"Best_norm_ED":17s}: {best_norm_ED:0.2f}'
 
                 loss_model_log = f'{loss_log}\n{current_model_log}\n{best_model_log}'
