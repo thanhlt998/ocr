@@ -83,7 +83,7 @@ def train(opt):
     # model = torch.nn.DataParallel(model).to(device)
     model = model.to(device)
     model.train()
-    if opt.load_from_checkpoint != '':
+    if opt.load_from_checkpoint:
         model.load_state_dict(torch.load(os.path.join(opt.load_from_checkpoint, 'checkpoint.pth')))
         print(f'loaded checkpoint from {opt.load_from_checkpoint}...')
     elif opt.saved_model != '':
@@ -136,7 +136,7 @@ def train(opt):
     print("Optimizer:")
     print(optimizer)
 
-    if opt.load_from_checkpoint != '':
+    if opt.load_from_checkpoint:
         optimizer.load_state_dict(torch.load(os.path.join(opt.load_from_checkpoint, 'optimizer.pth')))
 
     """ final options """
