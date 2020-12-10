@@ -83,7 +83,10 @@ def train(opt):
     # model = torch.nn.DataParallel(model).to(device)
     model = model.to(device)
     model.train()
-    if opt.saved_model != '':
+    if opt.load_from_checkpoint != '':
+        print(f'loading checkpoint from {opt.load_from_checkpoint}')
+        model.load_state_dict(torch.load(opt.load_from_checkpoint))
+    elif opt.saved_model != '':
         print(f'loading pretrained model from {opt.saved_model}')
         if opt.SequenceModeling == 'Transformer':
             fe_state = OrderedDict()
@@ -320,6 +323,7 @@ if __name__ == '__main__':
     parser.add_argument('--trans_dropout', type=float, default=0.1, help='trans_dropout of transformer sequence modeling')
     parser.add_argument('--freeze_fe', action='store_true', help='freeze feature extraction module')
     parser.add_argument('--beam_search', action='store_true', help='use beam search')
+    parser.add_argument('--load_from_checkpoint', type=str, help='continue training from checkpoint')
 
 
     opt = parser.parse_args()
