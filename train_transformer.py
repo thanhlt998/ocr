@@ -21,6 +21,7 @@ from collections import OrderedDict
 import re
 from tqdm import tqdm
 import json
+from radam import RAdam
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
 
@@ -128,9 +129,13 @@ def train(opt):
 
     # setup optimizer
     if opt.adam:
-        # optimizer = optim.Adam(filtered_parameters, lr=opt.lr, betas=(opt.beta1, 0.999))
-        optimizer = optim.AdamW(filtered_parameters, lr=opt.lr, betas=(opt.beta1, 0.999))
-        # optimizer = NoamOpt(model_size=opt.d_model, factor=1, warmup=2000, optimizer=optimizer)
+        assert opt.adam in ['Adam', 'AdamW', 'RAdam'], 'adam optimizer must be in Adam, AdamW or RAdam'
+        if opt.adam == 'Adam':
+            optimizer = optim.Adam(filtered_parameters, lr=opt.lr, betas=(opt.beta1, 0.999))
+        elif opt.adam == "AdamW":
+            optimizer = optim.AdamW(filtered_parameters, lr=opt.lr, betas=(opt.beta1, 0.999))
+        else:
+            optimizer = RAdam(filtered_parameters, lr=opt.lr, betas=(opt.beta1, 0.999))
     else:
         optimizer = optim.Adadelta(filtered_parameters, lr=opt.lr, rho=opt.rho, eps=opt.eps)
     print("Optimizer:")
@@ -299,7 +304,8 @@ if __name__ == '__main__':
     parser.add_argument('--valInterval', type=int, default=2000, help='Interval between each validation')
     parser.add_argument('--saved_model', default='', help="path to model to continue training")
     parser.add_argument('--FT', action='store_true', help='whether to do fine-tuning')
-    parser.add_argument('--adam', action='store_true', help='Whether to use adam (default is Adadelta)')
+    # parser.add_argument('--adam', action='store_true', help='Whether to use adam (default is Adadelta)')
+    parser.add_argument('--adam', type=str, default="", help='Whether to use adam (default is Adadelta), if specified: Adam|AdamW|RAdam')
     parser.add_argument('--lr', type=float, default=1, help='learning rate, default=1.0 for Adadelta')
     parser.add_argument('--beta1', type=float, default=0.9, help='beta1 for adam. default=0.9')
     parser.add_argument('--rho', type=float, default=0.95, help='decay rate rho for Adadelta. default=0.95')
