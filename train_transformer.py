@@ -141,8 +141,9 @@ def train(opt):
     print("Optimizer:")
     print(optimizer)
 
-    if opt.load_from_checkpoint:
+    if opt.load_from_checkpoint and opt.load_optimizer_state:
         optimizer.load_state_dict(torch.load(os.path.join(opt.load_from_checkpoint, 'optimizer.pth')))
+        print(f'loaded optimizer state from {os.path.join(opt.load_from_checkpoint, "optimizer.pth")}')
 
     """ final options """
     # print(opt)
@@ -353,6 +354,7 @@ if __name__ == '__main__':
     parser.add_argument('--trans_dropout', type=float, default=0.1, help='trans_dropout of transformer sequence modeling')
     parser.add_argument('--freeze_fe', action='store_true', help='freeze feature extraction module')
     parser.add_argument('--beam_search', action='store_true', help='use beam search')
+    parser.add_argument('--load_optimizer_state', action='store_true', help='use beam search')
     parser.add_argument('--load_from_checkpoint', type=str, help='continue training from checkpoint')
 
 
