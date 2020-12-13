@@ -15,6 +15,7 @@ from utils import CTCLabelConverter, AttnLabelConverter, Averager, TransformerCo
 from dataset import hierarchical_dataset, AlignCollate
 from model import Model
 from translate import batch_translate_beam_search, translate
+from label_smoothing_loss import LabelSmoothingLoss
 
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
@@ -223,6 +224,7 @@ def test(opt):
     else:
         converter = AttnLabelConverter(opt.character)
     opt.num_class = len(converter.character)
+    print(opt.character, len(opt.character))
 
     if opt.rgb:
         opt.input_channel = 3
@@ -230,7 +232,8 @@ def test(opt):
     print('model input parameters', opt.imgH, opt.imgW, opt.num_fiducial, opt.input_channel, opt.output_channel,
           opt.hidden_size, opt.num_class, opt.batch_max_length, opt.Transformation, opt.FeatureExtraction,
           opt.SequenceModeling, opt.Prediction)
-    model = torch.nn.DataParallel(model).to(device)
+    # model = torch.nn.DataParallel(model).to(device)
+    model = model.to(device)
 
     # load model
     print('loading pretrained model from %s' % opt.saved_model)
@@ -246,7 +249,7 @@ def test(opt):
     if 'CTC' in opt.Prediction:
         criterion = torch.nn.CTCLoss(zero_infinity=True).to(device)
     elif opt.Prediction == 'None':
-        criterion = LabelSmoothingLoss(classes=converter.n_classes, padding_idx=converter.pad_idx)
+        criterion = LabelSmoothingLoss(classes=converter.n_classes, padding_idx=converter.pad_idx, smoothing=0.1)
     else:
         criterion = torch.nn.CrossEntropyLoss(ignore_index=0).to(device)  # ignore [GO] token = ignore index 0
 
@@ -280,11 +283,13 @@ if __name__ == '__main__':
     parser.add_argument('--batch_size', type=int, default=192, help='input batch size')
     parser.add_argument('--saved_model', required=True, help="path to saved_model to evaluation")
     """ Data processing """
-    parser.add_argument('--batch_max_length', type=int, default=25, help='maximum-label-length')
-    parser.add_argument('--imgH', type=int, default=32, help='the height of the input image')
+    parser.add_argument('--batch_max_length', type=int, default=32, help='maximum-label-length')
+    parser.add_argument('--imgH', type=int, default=48, help='the height of the input image')
     parser.add_argument('--imgW', type=int, default=100, help='the width of the input image')
     parser.add_argument('--rgb', action='store_true', help='use rgb input')
-    parser.add_argument('--character', type=str, default='0123456789abcdefghijklmnopqrstuvwxyz', help='character label')
+    parser.add_argument('--character', type=str,
+                        default=" 0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ()-*!:#.,'/",
+                        help='character label')
     parser.add_argument('--sensitive', action='store_true', help='for sensitive character mode')
     parser.add_argument('--PAD', action='store_true', help='whether to keep ratio then pad for image resize')
     parser.add_argument('--data_filtering_off', action='store_true', help='for data_filtering_off mode')
@@ -295,16 +300,27 @@ if __name__ == '__main__':
     parser.add_argument('--SequenceModeling', type=str, required=True, help='SequenceModeling stage. None|BiLSTM')
     parser.add_argument('--Prediction', type=str, required=True, help='Prediction stage. CTC|Attn')
     parser.add_argument('--num_fiducial', type=int, default=20, help='number of fiducial points of TPS-STN')
-    parser.add_argument('--input_channel', type=int, default=1, help='the number of input channel of Feature extractor')
+    parser.add_argument('--input_channel', type=int, default=3, help='the number of input channel of Feature extractor')
     parser.add_argument('--output_channel', type=int, default=512,
                         help='the number of output channel of Feature extractor')
     parser.add_argument('--hidden_size', type=int, default=256, help='the size of the LSTM hidden state')
 
+    # transformer
+    parser.add_argument('--d_model', type=int, default=256, help='d_model of transformer sequence modeling')
+    parser.add_argument('--nhead', type=int, default=8, help='nhead of transformer sequence modeling')
+    parser.add_argument('--num_encoder_layers', type=int, default=6, help='num_encoder_layers of transformer sequence modeling')
+    parser.add_argument('--num_decoder_layers', type=int, default=6, help='num_decoder_layers of transformer sequence modeling')
+    parser.add_argument('--dim_feedforward', type=int, default=2048, help='dim_feedforward of transformer sequence modeling')
+    parser.add_argument('--max_seq_length', type=int, default=256, help='max_seq_length of transformer sequence modeling')
+    parser.add_argument('--pos_dropout', type=float, default=0.1, help='pos_dropout of transformer sequence modeling')
+    parser.add_argument('--trans_dropout', type=float, default=0.1, help='trans_dropout of transformer sequence modeling')
+    parser.add_argument('--beam_search', action='store_true', help='use beam search')
+
     opt = parser.parse_args()
 
     """ vocab / character number configuration """
-    if opt.sensitive:
-        opt.character = string.printable[:-6]  # same with ASTER setting (use 94 char).
+    # if opt.sensitive:
+        # opt.character = string.printable[:-6]  # same with ASTER setting (use 94 char).
 
     cudnn.benchmark = True
     cudnn.deterministic = True
