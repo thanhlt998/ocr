@@ -16,6 +16,7 @@ from dataset import hierarchical_dataset, AlignCollate
 from model import Model
 from translate import batch_translate_beam_search, translate
 from label_smoothing_loss import LabelSmoothingLoss
+from collections import OrderedDict
 
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
@@ -107,7 +108,11 @@ def validation(model, criterion, evaluation_loader, converter, opt):
         length_for_pred = torch.IntTensor([opt.batch_max_length] * batch_size).to(device)
         text_for_pred = torch.LongTensor(batch_size, opt.batch_max_length + 1).fill_(0).to(device)
 
-        text_for_loss, length_for_loss = converter.encode(labels, batch_max_length=opt.batch_max_length, train=False)
+        if opt.SequenceModeling == 'Transformer':
+            text_for_loss, length_for_loss = converter.encode(labels, batch_max_length=opt.batch_max_length,
+                                                              train=False)
+        else:
+            text_for_loss, length_for_loss = converter.encode(labels, batch_max_length=opt.batch_max_length,)
 
         start_time = time.time()
         preds_prob = None
@@ -129,6 +134,7 @@ def validation(model, criterion, evaluation_loader, converter, opt):
                 preds_index = preds_index.view(-1)
             else:
                 _, preds_index = preds.max(2)
+                preds_index = preds_index.view(-1)
             preds_str = converter.decode(preds_index.data, preds_size.data)
 
         elif opt.Prediction == 'None':
@@ -166,6 +172,7 @@ def validation(model, criterion, evaluation_loader, converter, opt):
             preds_max_prob, _ = preds_prob.max(dim=2)
         confidence_score_list = []
         for gt, pred, pred_max_prob in zip(labels, preds_str, preds_max_prob):
+            # print(f'{gt:25s}\t{pred:25s}\t{str(gt == pred)}')
             if 'Attn' in opt.Prediction:
                 gt = gt[:gt.find('[s]')]
                 pred_EOS = pred.find('[s]')
@@ -237,7 +244,11 @@ def test(opt):
 
     # load model
     print('loading pretrained model from %s' % opt.saved_model)
-    model.load_state_dict(torch.load(opt.saved_model, map_location=device))
+    state_dict = torch.load(opt.saved_model, map_location=device)
+    new_state_dict = OrderedDict()
+    for k, v in state_dict.items():
+        new_state_dict[re.sub(r'module\.', '', k)] = v
+    model.load_state_dict(new_state_dict)
     opt.exp_name = '_'.join(opt.saved_model.split('/')[1:])
     # print(model)
 
@@ -317,6 +328,7 @@ if __name__ == '__main__':
     parser.add_argument('--beam_search', action='store_true', help='use beam search')
 
     opt = parser.parse_args()
+    # opt.character = " @()'!/*,.qwertyuiopasdfghjklzxcvbnm1234567890QWERTYUIOPASDFGHJKLZXCVBNM"
 
     """ vocab / character number configuration """
     # if opt.sensitive:
